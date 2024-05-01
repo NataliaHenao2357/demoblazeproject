@@ -1,0 +1,92 @@
+buildscript {
+    ext.serenityCoreVersion = '3.3.0'
+    ext.serenityReport = '3.4.2'
+
+    repositories {
+        mavenLocal() //dependecias que tengo localmente
+        mavenCentral() //dependencias que debe bajar de internet
+        jcenter() // buckup por si no funcionan las dos anterior
+
+    }
+
+
+    dependencies {
+        classpath("net.serenity-bdd:serenity-gradle-plugin:$serenityReport")
+        classpath "net.serenity-bdd:serenity-single-page-report:$serenityCoreVersion"
+    }
+}
+
+plugins {
+    id "net.serenity-bdd.serenity-gradle-plugin" version "${serenityCoreVersion}"
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+    id 'java-library'
+}
+
+
+
+
+defaultTasks 'clean','test','aggregate' // creacion de reportes
+
+group 'com.demoblaze.www'
+version '1.0-SNAPSHOT' // el versionamiento
+
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+
+sourceCompatibility = 1.8 // la version minima que corre en java
+targetCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+ext {
+    junitVersion = '5.8.2' // crear variables para las dependencias
+    logVersion = '1.2.10'
+    lombokVersion = '1.18.22'
+}
+
+dependencies {
+
+    implementation ("net.serenity-bdd:serenity-core:${serenityCoreVersion}")
+    implementation "net.serenity-bdd:serenity-junit5:${serenityCoreVersion}"
+    implementation "net.serenity-bdd:serenity-cucumber:${serenityCoreVersion}"
+  // pruebas de API
+    implementation "net.serenity-bdd:serenity-rest-assured:${serenityCoreVersion}"
+
+    implementation "net.serenity-bdd:serenity-ensure:${serenityCoreVersion}"
+    implementation "net.serenity-bdd:serenity-screenplay:${serenityCoreVersion}"
+    implementation "net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}"
+    implementation "net.serenity-bdd:serenity-screenplay-rest:${serenityCoreVersion}"
+    // para generar los logs
+    implementation "ch.qos.logback:logback-classic:${logVersion}"
+    implementation "ch.qos.logback:logback-core:${logVersion}"
+
+    //implementation 'io.github.bonigarcia:webdrivermanager:5.6.3'
+    // implementation group: 'com.github.javafaker', name: 'javafaker', version: '1.0.2'
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+}
+
+test {
+    useJUnitPlatform() //los test se corre con Junit
+    testLogging.showStandardStreams = true
+    systemProperties System.getProperties()
+}
+
+serenity {
+    testRoot = "com.demoblaze.www"
+    requirementsBaseDir = "src/test/resources/features"
+    reports = ["single-page-html"]
+}
+
+gradle.startParameter.continueOnFailure = true
+test.finalizedBy(aggregate)
